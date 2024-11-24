@@ -1,10 +1,17 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 #include <ATen/ATen.h>
-#include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
+//#include <THC/THC.h>
+#include <ATen/ceil_div.h>
+#include <ATen/cuda/CUDAContext.h>
+#include <ATen/cuda/CUDAEvent.h>
+#include <ATen/ceil_div.h>
+#include <ATen/cuda/ThrustAllocator.h>
+
 #include <THC/THCAtomics.cuh>
 #include <THC/THCDeviceUtils.cuh>
+
+//#include "common.hpp"
 
 // TODO make it in a common file
 #define CUDA_1D_KERNEL_LOOP(i, n)                            \
@@ -272,11 +279,11 @@ at::Tensor ROIAlign_forward_cuda(const at::Tensor& input,
   auto output_size = num_rois * pooled_height * pooled_width * channels;
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 grid(std::min(THCCeilDiv(output_size, 512L), 4096L));
+  dim3 grid(std::min(((int)output_size +512-1)/512, 4096))
   dim3 block(512);
 
   if (output.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return output;
   }
 
@@ -317,7 +324,7 @@ at::Tensor ROIAlign_backward_cuda(const at::Tensor& grad,
 
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 grid(std::min(THCCeilDiv(grad.numel(), 512L), 4096L));
+  dim3 grid(std::min(((int)(grad.numel())+512-1)/512, 4096));
   dim3 block(512);
 
   // handle possibly empty gradients
