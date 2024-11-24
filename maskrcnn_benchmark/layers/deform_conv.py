@@ -7,7 +7,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from maskrcnn_benchmark.utils.amp import custom_fwd, custom_bwd
 
-from maskrcnn_benchmark import _C
+import maskrcnn_benchmark._C as _C
 
 class DeformConvFunction(Function):
 
