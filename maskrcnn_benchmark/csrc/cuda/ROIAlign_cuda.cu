@@ -279,7 +279,7 @@ at::Tensor ROIAlign_forward_cuda(const at::Tensor& input,
   auto output_size = num_rois * pooled_height * pooled_width * channels;
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 grid(std::min(((int)output_size +512-1)/512, 4096))
+  dim3 grid(std::min(((int)output_size +512-1)/512, 4096));
   dim3 block(512);
 
   if (output.numel() == 0) {
@@ -301,7 +301,7 @@ at::Tensor ROIAlign_forward_cuda(const at::Tensor& input,
          rois.contiguous().data_ptr<scalar_t>(),
          output.data_ptr<scalar_t>());
   });
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return output;
 }
 
@@ -329,7 +329,7 @@ at::Tensor ROIAlign_backward_cuda(const at::Tensor& grad,
 
   // handle possibly empty gradients
   if (grad.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return grad_input;
   }
 
@@ -348,6 +348,6 @@ at::Tensor ROIAlign_backward_cuda(const at::Tensor& grad,
          grad_input.data_ptr<scalar_t>(),
          rois.contiguous().data_ptr<scalar_t>());
   });
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return grad_input;
 }
