@@ -58,6 +58,9 @@ class GLIPDemo(object):
         self.confidence_threshold = confidence_threshold
 
         self.tokenizer = self.build_tokenizer()
+        self.color = 255
+        print("palette: ", self.palette)
+        print("color: ", self.color)
 
     def build_transform(self):
         """
